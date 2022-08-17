@@ -7,7 +7,8 @@ import 'package:flutter/material.dart';
 final _firestore = FirebaseFirestore.instance;
 
 class MessageStreamBuilder extends StatefulWidget {
-  MessageStreamBuilder({Key? key}) : super(key: key);
+  String convoId;
+  MessageStreamBuilder(this.convoId);
 
   @override
   State<MessageStreamBuilder> createState() => _MessageStreamBuilderState();
@@ -26,7 +27,7 @@ class _MessageStreamBuilderState extends State<MessageStreamBuilder> {
   Widget build(BuildContext context) {
     return StreamBuilder<QuerySnapshot>(
         stream:
-            _firestore.collection('messages').orderBy('createdAt').snapshots(),
+            _firestore.collection('messages').doc(widget.convoId).collection(widget.convoId).orderBy('timestamp').snapshots(),
         builder: (ctx, snapshot) {
           if (!snapshot.hasData) {
             return const Center(
@@ -36,9 +37,9 @@ class _MessageStreamBuilderState extends State<MessageStreamBuilder> {
           final messages = snapshot.data!.docs.reversed;
           List<DisplayMessages> displayMessages = [];
           for (var msg in messages) {
-            final messageText = msg.get('text');
-            final messageSender = msg.get('sender');
-            final currentUser = AuthHelper().user.email;
+            final messageText = msg.get('content');
+            final messageSender = msg.get('idFrom');
+            final currentUser = AuthHelper().user.uid;
 
             final displayMessage = DisplayMessages(
               sender: messageSender,
@@ -50,9 +51,11 @@ class _MessageStreamBuilderState extends State<MessageStreamBuilder> {
           return Expanded(
               child: ListView(
             reverse: true,
-            padding: EdgeInsets.symmetric(horizontal: 10, vertical: 20),
+            padding: const  EdgeInsets.symmetric(horizontal: 10, vertical: 20),
             children: displayMessages,
           ));
         });
   }
+
+
 }

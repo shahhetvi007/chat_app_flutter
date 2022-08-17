@@ -143,7 +143,7 @@ class _SignUpPageState extends State<SignUpPage> {
 
   Future addUserToDb() async {
     try {
-      await _firestore.collection('users').add({
+      await _firestore.collection('users').doc(AuthHelper().user.uid).set({
         'email': email,
         'id': AuthHelper().user.uid,
         'username': username,

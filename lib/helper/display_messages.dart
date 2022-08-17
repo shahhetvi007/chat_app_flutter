@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 class DisplayMessages extends StatelessWidget {
-  const DisplayMessages(
+  DisplayMessages(
       {Key? key, required this.sender, required this.text, required this.isMe})
       : super(key: key);
 
@@ -15,13 +15,13 @@ class DisplayMessages extends StatelessWidget {
       crossAxisAlignment:
           isMe ? CrossAxisAlignment.end : CrossAxisAlignment.start,
       children: [
-        Text(
-          sender,
-          style: TextStyle(
-            color: Colors.black54,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
+        // Text(
+        //   username,
+        //   style: TextStyle(
+        //     color: Colors.black54,
+        //     fontWeight: FontWeight.bold,
+        //   ),
+        // ),
         Container(
           decoration: BoxDecoration(
             borderRadius: isMe

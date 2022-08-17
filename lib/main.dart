@@ -20,6 +20,9 @@ class MyApp extends StatelessWidget {
         primarySwatch: Colors.blue,
       ),
       home: SignUpPage(),
+      // routes: {
+      //   'chat_screen': (ctx) => ChatScreen(),
+      // },
     );
   }
 }
