@@ -135,6 +135,36 @@ class _SignUpPageState extends State<SignUpPage> {
                     MaterialPageRoute(builder: (ctx) => const LoginPage()));
               },
             ),
+            const SizedBox(height: 20),
+            InkWell(
+              child: Container(
+                width: MediaQuery.of(context).size.width / 1.8,
+                height: 60,
+                decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(20),
+                    color: Colors.black54),
+                padding: EdgeInsets.all(10),
+                child: Row(
+                  children: const [
+                    CircleAvatar(
+                      backgroundImage: AssetImage('assets/google.jpeg'),
+                    ),
+                    SizedBox(width: 10),
+                    Text(
+                      'Sign in with Google',
+                      style: TextStyle(color: Colors.white, fontSize: 16),
+                    ),
+                  ],
+                ),
+              ),
+              onTap: () {
+                AuthHelper().signInWithGoogle().then((value) {
+                  Navigator.of(context)
+                      .push(MaterialPageRoute(builder: (ctx) => HomePage()));
+                  addUserToDb();
+                });
+              },
+            ),
           ],
         ),
       ),

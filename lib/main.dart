@@ -1,10 +1,18 @@
+import 'package:chat_app/helper/auth_helper.dart';
+import 'package:chat_app/helper/login_page.dart';
+import 'package:chat_app/home_page.dart';
 import 'package:chat_app/signup_page.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp();
+  // SystemChrome.setSystemUIOverlayStyle(const SystemUiOverlayStyle(
+  //   statusBarBrightness: Brightness.dark,
+  //   // statusBarColor: Colors.white,
+  // ));
   runApp(const MyApp());
 }
 
@@ -18,11 +26,11 @@ class MyApp extends StatelessWidget {
       title: 'Flutter Demo',
       theme: ThemeData(
         primarySwatch: Colors.blue,
+        primaryColor: const Color(0xFF8CDEDF),
+        backgroundColor: Colors.white,
+        // visualDensity: VisualDensity.adaptivePlatformDensity,
       ),
-      home: SignUpPage(),
-      // routes: {
-      //   'chat_screen': (ctx) => ChatScreen(),
-      // },
+      home: AuthHelper().user != null ? HomePage() : LoginPage(),
     );
   }
 }

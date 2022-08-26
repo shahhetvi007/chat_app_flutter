@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:chat_app/chat_screen.dart';
 import 'package:chat_app/helper/auth_helper.dart';
 import 'package:chat_app/helper/helper_functions.dart';
@@ -22,61 +24,121 @@ class _HomePageState extends State<HomePage> {
 
   @override
   void initState() {
+    if (Platform.isIOS) {
+      FirebaseMessaging.instance.requestPermission(
+        alert: true,
+        announcement: false,
+        badge: true,
+        carPlay: false,
+        criticalAlert: false,
+        provisional: false,
+        sound: true,
+      );
+    }
     super.initState();
+    checkForInitialMessage();
     snapshots = _firestore.collection('users').snapshots();
     FirebaseMessaging.instance.getToken().then((value) {
       print('token');
       print(value);
     });
+
     FirebaseMessaging.onBackgroundMessage(_firebaseMessgaingBackgroundHandler);
+    FirebaseMessaging.onMessage.listen((RemoteMessage message) {
+      setUpFlutterNotifications();
+      print(message.notification?.title);
+      showDialog(
+          context: context,
+          builder: (ctx) {
+            return AlertDialog(
+              title: Text((message.notification?.title)!),
+              content: Text((message.notification?.body)!),
+              actions: [
+                TextButton(
+                    onPressed: () => Navigator.of(ctx).pop(),
+                    child: Text('OK')),
+              ],
+            );
+          });
+      showFlutterNotification(message);
+    });
+    // FirebaseMessaging.onMessageOpenedApp.listen((event) {
+    //   showFlutterNotification(event);
+    // });
   }
 
-  Future<void> _firebaseMessgaingBackgroundHandler(RemoteMessage message) async{
+  checkForInitialMessage() async {
     await Firebase.initializeApp();
+    RemoteMessage? initialMessage =
+        await FirebaseMessaging.instance.getInitialMessage();
+    if (initialMessage != null) {
+      showFlutterNotification(initialMessage);
+    }
+  }
+
+  Future<void> _firebaseMessgaingBackgroundHandler(
+      RemoteMessage message) async {
+    // await Firebase.initializeApp();
     await setUpFlutterNotifications();
     showFlutterNotification(message);
   }
 
-  Future<void> setUpFlutterNotifications() async{
-    if(isFlutterLocalNotificationsEnabled){
+  Future<void> setUpFlutterNotifications() async {
+    if (isFlutterLocalNotificationsEnabled) {
       return;
     }
-    FirebaseMessaging.onMessage.listen((event) {
-      print(event.notification?.title);
-    });
-    channel = const AndroidNotificationChannel('high importance channel', 'High Important Notifications',
+
+    channel = const AndroidNotificationChannel(
+      'high importance channel',
+      'High Important Notifications',
+      sound: RawResourceAndroidNotificationSound('notification_sound'),
       description: 'This channel is used for high important notification',
       importance: Importance.high,
     );
-    flutterLocalNotificationsPlugin = FlutterLocalNotificationsPlugin();
+    var initializeSettingsAndroid =
+        const AndroidInitializationSettings('ic_notificationn');
+    var initializeSettingsiOS = const IOSInitializationSettings();
+    var initializeSettings = InitializationSettings(
+        android: initializeSettingsAndroid, iOS: initializeSettingsiOS);
+    flutterLocalNotificationsPlugin.initialize(initializeSettings);
 
-    await flutterLocalNotificationsPlugin.resolvePlatformSpecificImplementation
-    <AndroidFlutterLocalNotificationsPlugin>()?.createNotificationChannel(channel);
+    await flutterLocalNotificationsPlugin
+        .resolvePlatformSpecificImplementation<
+            AndroidFlutterLocalNotificationsPlugin>()
+        ?.createNotificationChannel(channel);
 
-    await FirebaseMessaging.instance.setForegroundNotificationPresentationOptions(
-        alert: true,
-        badge: true,
-        sound: true
-    );
+    await FirebaseMessaging.instance
+        .setForegroundNotificationPresentationOptions(
+            alert: true, badge: true, sound: true);
     isFlutterLocalNotificationsEnabled = true;
   }
 
-  void showFlutterNotification(RemoteMessage message){
+  void showFlutterNotification(RemoteMessage message) {
     RemoteNotification? notification = message.notification;
     AndroidNotification? androidNotification = message.notification?.android;
-    if(notification != null && androidNotification != null && !kIsWeb){
-      flutterLocalNotificationsPlugin.show(notification.hashCode, notification.title, notification.body,
-          NotificationDetails(android: AndroidNotificationDetails(
-            channel.id,
-            channel.name,
-            channelDescription: channel.description,
-          ))
+    if (notification != null && androidNotification != null && !kIsWeb) {
+      flutterLocalNotificationsPlugin.show(
+        notification.hashCode,
+        notification.title,
+        notification.body,
+        NotificationDetails(
+            android: AndroidNotificationDetails(channel.id, channel.name,
+                channelDescription: channel.description,
+                icon: "@drawable/ic_notificationn",
+                color: const Color(0xffffa07a),
+                sound: const RawResourceAndroidNotificationSound(
+                    'notification_sound')),
+            iOS: const IOSNotificationDetails(
+              presentBadge: true,
+              presentAlert: true,
+              presentSound: true,
+            )),
       );
     }
   }
 
-  late FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin;
-
+  FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
+      FlutterLocalNotificationsPlugin();
 
   @override
   Widget build(BuildContext context) {
@@ -88,14 +150,18 @@ class _HomePageState extends State<HomePage> {
           stream: _firestore.collection('users').snapshots(),
           builder: (ctx, AsyncSnapshot<QuerySnapshot> streamSnapshot) {
             return ListView.builder(
-                itemCount: (streamSnapshot.data != null) ? streamSnapshot.data?.docs.length : 0,
+                itemCount: (streamSnapshot.data != null)
+                    ? streamSnapshot.data?.docs.length
+                    : 0,
                 itemBuilder: (ctx, index) {
                   if (streamSnapshot.data?.docs[index]['id'] !=
                       AuthHelper().user.uid) {
                     return ListTile(
-                      title: Text(streamSnapshot.data?.docs[index]['username'] as String),
+                      title: Text(streamSnapshot.data?.docs[index]['username']
+                          as String),
                       onTap: () {
-                        createConversation(context, streamSnapshot.data?.docs[index]['id']);
+                        createConversation(
+                            context, streamSnapshot.data?.docs[index]['id']);
                       },
                     );
                   } else {
@@ -106,9 +172,11 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  void createConversation(BuildContext context, String contactId){
+  void createConversation(BuildContext context, String contactId) {
     String uid = AuthHelper().user.uid;
     String convoId = HelperFunctions.getConvoId(uid, contactId);
-    Navigator.of(context).push(MaterialPageRoute(builder: (ctx) => ChatScreen(uid: uid, contactId: contactId, convoId: convoId)));
+    Navigator.of(context).push(MaterialPageRoute(
+        builder: (ctx) =>
+            ChatScreen(uid: uid, contactId: contactId, convoId: convoId)));
   }
 }
