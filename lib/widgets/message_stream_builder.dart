@@ -1,5 +1,5 @@
 import 'package:chat_app/helper/auth_helper.dart';
-import 'package:chat_app/helper/display_messages.dart';
+import 'package:chat_app/widgets/display_messages.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
@@ -26,8 +26,12 @@ class _MessageStreamBuilderState extends State<MessageStreamBuilder> {
   @override
   Widget build(BuildContext context) {
     return StreamBuilder<QuerySnapshot>(
-        stream:
-            _firestore.collection('messages').doc(widget.convoId).collection(widget.convoId).orderBy('timestamp').snapshots(),
+        stream: _firestore
+            .collection('messages')
+            .doc(widget.convoId)
+            .collection(widget.convoId)
+            .orderBy('timestamp')
+            .snapshots(),
         builder: (ctx, snapshot) {
           if (!snapshot.hasData) {
             return const Center(
@@ -51,11 +55,9 @@ class _MessageStreamBuilderState extends State<MessageStreamBuilder> {
           return Expanded(
               child: ListView(
             reverse: true,
-            padding: const  EdgeInsets.symmetric(horizontal: 10, vertical: 20),
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 20),
             children: displayMessages,
           ));
         });
   }
-
-
 }

@@ -12,11 +12,11 @@
     <item
         android:width="130dp"
         android:height="160dp"
-        android:drawable="@drawable/ic_noti"
+        android:drawable="@drawable/ic_notification"
         android:gravity="center_horizontal"
         android:top="200dp">
         <bitmap
             android:gravity="fill"
-            android:src="@drawable/ic_noti"/>
+            android:src="@drawable/ic_notification"/>
     </item>
 </layer-list>

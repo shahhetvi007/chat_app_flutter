@@ -1,6 +1,7 @@
 import 'package:chat_app/helper/auth_helper.dart';
-import 'package:chat_app/helper/login_page.dart';
-import 'package:chat_app/home_page.dart';
+import 'package:chat_app/model/user_model.dart';
+import 'package:chat_app/screens/homePage.dart';
+import 'package:chat_app/screens/login_page.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 
@@ -117,7 +118,8 @@ class _SignUpPageState extends State<SignUpPage> {
                   print("$email,$password");
                   AuthHelper().signUp(email, password).then((value) {
                     if (value == null) {
-                      addUserToDb();
+                      addUserToDb(User(
+                          id: value.uid, email: email, username: username));
                       Navigator.of(context).pushReplacement(
                           MaterialPageRoute(builder: (ctx) => HomePage()));
                     } else {
@@ -143,7 +145,7 @@ class _SignUpPageState extends State<SignUpPage> {
                 decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(20),
                     color: Colors.black54),
-                padding: EdgeInsets.all(10),
+                padding: const EdgeInsets.all(10),
                 child: Row(
                   children: const [
                     CircleAvatar(
@@ -161,7 +163,8 @@ class _SignUpPageState extends State<SignUpPage> {
                 AuthHelper().signInWithGoogle().then((value) {
                   Navigator.of(context)
                       .push(MaterialPageRoute(builder: (ctx) => HomePage()));
-                  addUserToDb();
+                  addUserToDb(User(
+                      id: (value?.uid)!, email: email, username: username));
                 });
               },
             ),
@@ -171,13 +174,13 @@ class _SignUpPageState extends State<SignUpPage> {
     );
   }
 
-  Future addUserToDb() async {
+  Future addUserToDb(User user) async {
+    Map<String, dynamic> userMap = user.toMap(user);
     try {
-      await _firestore.collection('users').doc(AuthHelper().user.uid).set({
-        'email': email,
-        'id': AuthHelper().user.uid,
-        'username': username,
-      });
+      await _firestore
+          .collection('users')
+          .doc(AuthHelper().user.uid)
+          .set(userMap);
     } on FirebaseException catch (e) {
       print(e.message);
     }

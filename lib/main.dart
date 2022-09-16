@@ -1,10 +1,8 @@
 import 'package:chat_app/helper/auth_helper.dart';
-import 'package:chat_app/helper/login_page.dart';
-import 'package:chat_app/home_page.dart';
-import 'package:chat_app/signup_page.dart';
+import 'package:chat_app/screens/homePage.dart';
+import 'package:chat_app/screens/login_page.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();

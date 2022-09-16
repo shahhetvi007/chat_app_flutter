@@ -1,6 +1,6 @@
 import 'package:chat_app/helper/auth_helper.dart';
-import 'package:chat_app/home_page.dart';
-import 'package:chat_app/signup_page.dart';
+import 'package:chat_app/screens/homePage.dart';
+import 'package:chat_app/screens/signup_page.dart';
 import 'package:flutter/material.dart';
 
 class LoginPage extends StatefulWidget {

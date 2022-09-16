@@ -1,14 +1,16 @@
 import 'dart:io';
 
-import 'package:chat_app/chat_screen.dart';
 import 'package:chat_app/helper/auth_helper.dart';
 import 'package:chat_app/helper/helper_functions.dart';
+import 'package:chat_app/screens/chat_screen.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+
+import 'call/pickup/pickup_layout.dart';
 
 class HomePage extends StatefulWidget {
   @override
@@ -142,33 +144,35 @@ class _HomePageState extends State<HomePage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Home'),
+    return PickUpLayout(
+      scaffold: Scaffold(
+        appBar: AppBar(
+          title: const Text('Home'),
+        ),
+        body: StreamBuilder(
+            stream: _firestore.collection('users').snapshots(),
+            builder: (ctx, AsyncSnapshot<QuerySnapshot> streamSnapshot) {
+              return ListView.builder(
+                  itemCount: (streamSnapshot.data != null)
+                      ? streamSnapshot.data?.docs.length
+                      : 0,
+                  itemBuilder: (ctx, index) {
+                    if (streamSnapshot.data?.docs[index]['id'] !=
+                        AuthHelper().user.uid) {
+                      return ListTile(
+                        title: Text(streamSnapshot.data?.docs[index]['username']
+                            as String),
+                        onTap: () {
+                          createConversation(
+                              context, streamSnapshot.data?.docs[index]['id']);
+                        },
+                      );
+                    } else {
+                      return Container();
+                    }
+                  });
+            }),
       ),
-      body: StreamBuilder(
-          stream: _firestore.collection('users').snapshots(),
-          builder: (ctx, AsyncSnapshot<QuerySnapshot> streamSnapshot) {
-            return ListView.builder(
-                itemCount: (streamSnapshot.data != null)
-                    ? streamSnapshot.data?.docs.length
-                    : 0,
-                itemBuilder: (ctx, index) {
-                  if (streamSnapshot.data?.docs[index]['id'] !=
-                      AuthHelper().user.uid) {
-                    return ListTile(
-                      title: Text(streamSnapshot.data?.docs[index]['username']
-                          as String),
-                      onTap: () {
-                        createConversation(
-                            context, streamSnapshot.data?.docs[index]['id']);
-                      },
-                    );
-                  } else {
-                    return Container();
-                  }
-                });
-          }),
     );
   }
 
